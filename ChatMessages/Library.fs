@@ -2,18 +2,9 @@
 
 open System
 
-type DoesWork(montelimar: string) =
-    member x.Montelimar = montelimar
-    
-type WorksAlso(montelimar: string) =
-    let _montelimar = montelimar
-    member x.Montelimar with get() = _montelimar
-
-type DoesNotWork(montelimaro: string) =
-    member x.Montelimar = montelimaro
-
-type PrintThis(somethingToPrint: string ) = 
-    member x.SomethingToPrint = somethingToPrint
+type PrinterJob =
+    | PrintThis of string
+    | Teardown
     
 type ConnectRequest(username:string) =
     member x.UserName = username
