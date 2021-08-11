@@ -2,6 +2,26 @@
 
 open System
 
+type TSV = {
+    Timestamp : DateTime;
+    Value : float
+}
+
+type TaggedTsvs = {
+    Tag: string
+    Values: list<TSV>
+}
+
+type PrintJob(ttsvs: list<TaggedTsvs>) = 
+    member x.TTSVs = ttsvs
+
+type WriteResult = 
+    | WriteGood
+    | WriteBad
+
+type WriteResponse(writeResult: WriteResult) = 
+    member x.WriteResult = writeResult
+
 type PrinterJob =
     | PrintThis of string
     | Teardown

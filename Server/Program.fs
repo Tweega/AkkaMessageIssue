@@ -35,20 +35,30 @@ let main argv =
     let system = System.create "MyServer" config
 
     let chatServerActor =
-        spawn system "ChatServer" <| fun (mailbox:Actor<_>) ->
+        spawn system "ChatServer" <| fun (mailbox) ->
             let rec loop (clients:Akka.Actor.IActorRef list) = actor {
 
-                let! (msg:PrinterJob) = mailbox.Receive()
+                let! (msg:obj) = mailbox.Receive()
 
                 printfn "Received %A" msg   //Received seq [seq [seq []]; seq [seq [seq []]]]  ???
 
                 match msg with
                 
-                    | PrintThis str -> 
-                        Console.WriteLine("Printing: {0} Do we get this?", str)
+                    | :? PrintJob as pj -> 
+                        pj.TTSVs |> 
+                        List.iter(fun ttsv ->
+                            printfn "%s\n" ttsv.Tag
+                            ttsv.Values |>
+                            List.iter(fun tsv ->
+                                printfn "%f,  " tsv.Value
+                            )
+                            let hh = WriteResponse(WriteGood)
+                            mailbox.Sender().Tell(hh, mailbox.Self)
+                        )
+                        
                         return! loop clients
-                    | Teardown -> 
-                        Console.WriteLine("Tearing down now")                        
+                    | _ ->                   
+                        printfn "Some other message\n" 
                         return! loop clients
                 
             }

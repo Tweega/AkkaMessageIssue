@@ -36,9 +36,17 @@ let main argv =
             let server = mailbox.Context.ActorSelection("akka.tcp://MyServer@localhost:8081/user/ChatServer")
 
             let rec loop nick = actor {
-                let! (msg:PrinterJob) = mailbox.Receive()
-                server.Tell(msg)
-                return! loop nick
+                let! (msg:obj) = mailbox.Receive()
+                match msg with 
+                | :? WriteResponse as wr ->
+                    match wr.WriteResult with 
+                    | WriteGood -> printfn "Hooray"
+                    | WriteBad -> printfn "Boo"
+                    
+                    return! loop nick
+                | _ ->
+                    server.Tell(msg)
+                    return! loop nick
                 }
             loop ""
 
@@ -47,7 +55,10 @@ let main argv =
     while true do
         let input = Console.ReadLine()
         //chatClientActor.Tell(SayRequest(username, input))
-        chatClientActor.Tell(PrintThis(input))
+        let now = DateTime.Now
+        let tsvs = [{Timestamp = now; Value = 11.11}]
+        let ttsvs = [{Tag = "TagA"; Values = tsvs}]
+        chatClientActor.Tell(PrintJob(ttsvs))
            
 
     0
