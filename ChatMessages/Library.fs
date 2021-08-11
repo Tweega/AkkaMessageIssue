@@ -2,7 +2,19 @@
 
 open System
 
+type DoesWork(montelimar: string) =
+    member x.Montelimar = montelimar
+    
+type WorksAlso(montelimar: string) =
+    let _montelimar = montelimar
+    member x.Montelimar with get() = _montelimar
 
+type DoesNotWork(montelimaro: string) =
+    member x.Montelimar = montelimaro
+
+type PrintThis(somethingToPrint: string ) = 
+    member x.SomethingToPrint = somethingToPrint
+    
 type ConnectRequest(username:string) =
     member x.UserName = username
 
@@ -25,18 +37,4 @@ type SayResponse(username:string, text:string) =
     member x.Username = username
     member x.Text = text
 
-type WriterMsg =
-    | WriteThis of string
-    | Teardown
-
-type WriteResult =
-    | Good
-    | Bad of string
-    | Write of string
-
-type PrintThis(somethingToPrint: string ) = 
-    member x.WhatToPrint = somethingToPrint
-
-type PrintResult(writeResult: WriteResult) = 
-    member x.WriteResult = writeResult
     

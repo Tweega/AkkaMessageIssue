@@ -36,24 +36,69 @@ let main argv =
 
     let chatServerActor =
         spawn system "ChatServer" <| fun mailbox ->
-            let rec loop state =
-                actor {
-                    let! (message:obj) = mailbox.Receive()
-                    printfn "Received %A" message
-                    match message with
-                    | :? PrintThis as sr ->
-                        printfn "Printing: %s" sr.WhatToPrint
-                        let pr = new PrintResult(Good)
-                        mailbox.Sender() <! pr
-                        
-                    | _ -> 
-                        let pr = new PrintResult(Bad "Unrecognised message in ChatServer actor")
-                        mailbox.Sender() <! pr
-                        
-                    
+            let rec loop (clients:Akka.Actor.IActorRef list) = actor {
+
+                let! (msg:obj) = mailbox.Receive()
+
+                printfn "Received %A" msg
+
+                match msg with
+                | :? PrintThis as pt ->
+                    Console.WriteLine("Printing: {0} We get this", pt.SomethingToPrint)
+                    return! loop clients
+
+                | :? DoesWork as dw ->
+                    Console.WriteLine("Printing: {0} We get this", dw.Montelimar)
+                    return! loop clients
+                
+                | :? WorksAlso as dw ->
+                    Console.WriteLine("Printing: {0} We get this", dw.Montelimar)
+                    return! loop clients
+                
+                | :? DoesNotWork as dnw ->
+                    Console.WriteLine("Printing: {0} We DO NOT get this", dnw.Montelimar)
+                    return! loop clients
+                
+
+                | :? SayRequest as sr ->
+
+                        let color = Console.ForegroundColor
+                        Console.ForegroundColor <- ConsoleColor.Green
+                        Console.WriteLine("{0} said {1}", sr.Username, sr.Text)
+
+                        let response = SayResponse(sr.Username, sr.Text)
+
+                        for client in clients do
+                            client.Tell(response, mailbox.Self)
+
+                        Console.ForegroundColor <- color
+                        return! loop clients
+
+                | :? ConnectRequest as cr ->
+                    let response = ConnectResponse(cr.UserName + " Hello and welcome to Akka .NET chat example")
+
+                    let sender = mailbox.Sender()
+                    sender.Tell(response, mailbox.Self)
+
+                    let color = Console.ForegroundColor
+                    Console.ForegroundColor <- ConsoleColor.Green
+                    Console.WriteLine("{0} has joined the chat", cr.UserName)
+                    Console.ForegroundColor <- color
+
+                    return! loop (sender :: clients)
+                | :? NickRequest as nr ->
+                        let response = NickResponse(nr.OldUsername, nr.NewUSername)
+                        for client in clients do
+                           client.Tell(response, mailbox.Self)
+
+                        return! loop clients
+
+                | :? SayResponse as sr ->
+                                Console.WriteLine("{0}: {1}", sr.Username, sr.Text)
+                                return! loop clients
+                | _ -> return! loop clients
                 }
-               
-            loop("some state")
+            loop []
 
     Console.ReadLine() |> ignore
 
