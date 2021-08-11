@@ -2,7 +2,7 @@
 
 I am unable to use discriminated unions as messages to akka actors.  If anyone can point me at an example that does this, it would be much appreciated.
 
-My own attempt at this is at . (snippets below).  It is a cutdown version of a sample found at https://github.com/rikace/AkkaActorModel.git (Chat project)
+My own attempt at this is at git@github.com:Tweega/AkkaMessageIssue.git. (snippets below).  It is a cutdown version of a sample found at https://github.com/rikace/AkkaActorModel.git (Chat project)
 
 
 ### Problem
