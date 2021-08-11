@@ -71,9 +71,9 @@ Messages are forwarded to the client from console input
 ## Dependencies 
 (I am not using paket here) - PM commands below: 
 
-Install-Package Akka -Version 1.4.23
-Install-Package Akka.Remote -Version 1.4.23
-Install-Package Akka.FSharp -Version 1.4.23
+- Install-Package Akka -Version 1.4.23
+- Install-Package Akka.Remote -Version 1.4.23
+- Install-Package Akka.FSharp -Version 1.4.23
 
 I am hosting the application in net5.0 
 
