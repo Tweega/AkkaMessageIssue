@@ -5,6 +5,11 @@ open Akka.Remote
 open Akka.Routing
 open ChatMessages
 open System
+open OSIsoft.AF
+open OSIsoft.AF.Asset
+open OSIsoft.AF.Data
+open OSIsoft.AF.PI
+open PiWriteTypes
 
 [<EntryPoint>]
 let main argv =
@@ -36,7 +41,7 @@ let main argv =
 
     let chatServerActor =
         spawn system "ChatServer" <| fun (mailbox) ->
-            let rec loop (clients:Akka.Actor.IActorRef list) = actor {
+            let rec loop (piWriteState: PiWriteTypes.PiWriteState) = actor {
 
                 let! (msg:obj) = mailbox.Receive()
 
@@ -45,25 +50,25 @@ let main argv =
                 match msg with
                 
                     | :? PrintJob as pj -> 
-                        pj.TTSVs |> 
-                        List.iter(fun ttsv ->
-                            printfn "%s\n" ttsv.Tag
-                            ttsv.Values |>
-                            List.iter(fun tsv ->
-                                printfn "%f,  " tsv.Value
-                            )
-                            let hh = WriteResponse(WriteGood)
-                            mailbox.Sender().Tell(hh, mailbox.Self)
-                        )
-                        
-                        return! loop clients
+                        let maybeServer = Option.ofObj(piWriteState.PIServer) 
+                        match maybeServer with 
+                        | Some piServer ->
+                            let writeResponse, newTagMap = PIAPI.piWrite(piWriteState, pj.TTSVs)
+                            let newState = {piWriteState with TagMap = newTagMap}
+                            mailbox.Sender().Tell(writeResponse, mailbox.Self)
+                            return! loop newState
+                        | None ->
+                            let writeRes = WriteResponse(NoServer)
+                            return! loop piWriteState
                     | _ ->                   
                         printfn "Some other message\n" 
-                        return! loop clients
+                        return! loop piWriteState
                 
             }
-
-            loop []
+            // Create Dynamic Attribute to a PIPoint to Update
+            let piServer: PIServer  = PIServers.GetPIServers().DefaultPIServer
+            let piWriteState = {PIServer = piServer; TagMap = Map.empty}
+            loop piWriteState
 
     Console.ReadLine() |> ignore
 

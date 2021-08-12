@@ -18,6 +18,7 @@ type PrintJob(ttsvs: list<TaggedTsvs>) =
 type WriteResult = 
     | WriteGood
     | WriteBad
+    | NoServer
 
 type WriteResponse(writeResult: WriteResult) = 
     member x.WriteResult = writeResult
